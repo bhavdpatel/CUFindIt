@@ -12,12 +12,21 @@ class Item(db.Model):
     name = db.Column(db.String, nullable=False)
     image_name = db.Column(db.String, nullable=False)
     location = db.Column(db.String, nullable=True)
-    user_found = db.relationship("user_found", back_populates="found_items", nullable=False)
-    user_claimed = db.relationship("user_claimed", back_populates="claimed_items", nullable=True)
+    id_found = db.relationship("user_found", back_populates="found_items", nullable=False)
+    id_claimed = db.relationship("user_claimed", back_populates="claimed_items", nullable=True)
     date_found = db.Column(db.String, nullable=False)
     date_claimed = db.Column(db.String, nullable=True)
 
-     def serialize(self):
+    def __init__(self, name, contact, image, date_found, location, id_found):
+        self.name = name
+        self.image_name = image
+        self.location = location
+        self.date_found = date_found
+        self.user_found = id_found
+        self.date_claimed = ""
+        self.user_claimed = ""
+
+    def serialize(self):
         return {
             "id": self.id,
             "name": self.name,
@@ -26,8 +35,10 @@ class Item(db.Model):
             "location": self.location,
             "date_found": self.date_found,
             "date_claimed": self.date_claimed
-            "user": self.user_id
+            "id_found": self.id_found,
+            "id_claimed" : self.id_claimed
         }
+    
 
 
 class User(db.Model):
@@ -72,7 +83,16 @@ class User(db.Model):
             "id": self.id,
             "netid": self.netid,
             "email": self.email,
+            "lost": [l.serialize() for l in self.lost],
+            "found": [f.serialize() for f in self.found]
+        }
+    def subserialize(self):
+        return {
+            "id": self.id,
+            "netid": self.netid,
+            "email": self.email,
             # "lost": [l.serialize() for l in self.lost],
             # "found": [f.serialize() for f in self.found]
+        
         }
 

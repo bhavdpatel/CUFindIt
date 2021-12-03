@@ -35,7 +35,7 @@ db.init_app(app)
 with app.app_context():
     db.create_all()
 
-# Routes
+
 
 
 @app.route("/")
@@ -96,29 +96,32 @@ def update_session():
     }, )
 
 
+@app.route("/api/item/", methods=["GET"])
+def get_all_items():
+    items = [i.serialize() for i in Item.query.all()]
+    if items is None:
+        return failure_response({"error": True}, 401)
+    return success_response({"courses": items})
+
 @app.route("api/item/<int:item_id>")
-def get_found(item_id):
-    found = Found.query.filter_by(id=found_id).first()
-    if found is None:
-        return failure_response({"error": True})
-    return success_response(lost.serialize())
-
-def get_claimed(item_id):
-    claimed = Claimed.query.filter_by(id=claimed_id).first()
-    if claimed is None:
-        return failure_response({"error": True})
-    return success_response(found.serialize())
+def get_item(item_id):
+    item = Item.query.filter_by(id=item_id).first()
+    
+    if item is None:
+        return failure_response({"error": True},401)
+    
+    return success_response({"item": item.serialize()})
 
 
-@app.route("/api/item/user/")
-def get_item_user():
-    success, session_token = extract_token(request)
-    user = User.query.filter_by(session_token=session_token).first()
+@app.route("/api/item/<string>:net_id>/")
+def get_item_user(net_id):
+    #success, session_token = extract_token(request)
+    user = User.query.filter_by(netid=net_id).first()
     if user is None:
         return failure_response({"error": True})
-    success = user.verify_session_token(session_token)
-    if not success:
-        return failure_response({"error": True}, 401)
+    #success = user.verify_session_token(session_token)
+    #if not success:
+        #return failure_response({"error": True}, 401)
     item = item.query.filter_by(user_id=user.id)
     return success_response([l.serialize() for l in item])
 
@@ -140,13 +143,12 @@ def post_item():
     if body.keys() < {"name"}:
         return failure_response({"error": True}, 400)
 
-    item = item(
+    item = Item(
         name=body["name"],
-        contact=body.get("contact", None),
         image=body.get("image", None),
         date_found=body.get("date_found", None),
         location=body.get("location", None),
-        user_id=user.id,
+        id_found=user.id,
     )
     db.session.add(item)
     db.session.commit()
@@ -173,6 +175,37 @@ def delete_item(item_id):
     db.session.delete(item)
     db.session.commit()
     return success_response(item.serialize())
+
+
+
+@app.route("/api/item/<int:item_id>/", methods = ["UPDATE"])
+def update_item(item_id):
+    
+    success, session_token = extract_token(request)
+
+    user = User.query.filter_by(session_token=session_token).first()
+    if user is None:
+        return failure_response({"error": True})
+
+    success = user.verify_session_token(session_token)
+
+    if not success:
+        return failure_response({"error": True}, 401)
+    item = Item.query.filter_by(id=item_id).first()
+    
+    if item is None: 
+        return failure_response({"error": True}, 401)
+    
+    body = json.loads(request.data)
+    
+
+    item.user_claimed = user.netid
+    item.date_claimed = body.get("date_claimed")
+    
+    user.claimed_items.append(item)
+
+    db.session.commit()
+
 
 if __name__ == "__main__":
     port = int(os.environ.get("PORT", 3000))
