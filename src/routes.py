@@ -4,7 +4,7 @@ from hashlib import new
 from flask import Flask, request
 import json
 
-from db import db, User, Lost, Found
+from databases import db, User, Item
 
 app = Flask(__name__)
 db_filename = "lost_and_found.db"
@@ -101,7 +101,7 @@ def get_all_items():
     items = [i.serialize() for i in Item.query.all()]
     if items is None:
         return failure_response({"error": True}, 401)
-    return success_response({"courses": items})
+    return success_response({"items": items})
 
 @app.route("api/item/<int:item_id>")
 def get_item(item_id):
@@ -110,7 +110,7 @@ def get_item(item_id):
     if item is None:
         return failure_response({"error": True},401)
     
-    return success_response({"item": item.serialize()})
+    return success_response({"items": item.serialize()})
 
 
 @app.route("/api/item/<string>:net_id>/")
@@ -122,33 +122,40 @@ def get_item_user(net_id):
     #success = user.verify_session_token(session_token)
     #if not success:
         #return failure_response({"error": True}, 401)
-    item = item.query.filter_by(user_id=user.id)
+    item = Item.query.filter_by(user_id=user.id)
     return success_response([l.serialize() for l in item])
 
 
 @app.route("/api/item/", methods=['POST'])
 def post_item():
 
-    success, session_token = extract_token(request)
+    #success, session_token = extract_token(request)
 
-    user = User.query.filter_by(session_token=session_token).first()
-    if user is None:
-        return failure_response({"error": True})
+    #user = User.query.filter_by(session_token=session_token).first()
+    #if user is None:
+    #    return failure_response({"error": True})
 
-    success = user.verify_session_token(session_token)
-    if not success:
-        return failure_response({"error": True}, 401)
+    #success = user.verify_session_token(session_token)
+    #if not success:
+    #    return failure_response({"error": True}, 401)
 
     body = json.loads(request.data)
-    if body.keys() < {"name"}:
-        return failure_response({"error": True}, 400)
+
+    n = body.get("name", None)
+    imag = body.get("image", None)
+    date_f = body.get("date_found", None)
+    loc = body.get("location", None)
+    id_f = body.get("id_found", None)
+
+    if n or imag or date_f or loc or id_f is None:
+        failure_response({"error": True}, 401)
 
     item = Item(
-        name=body["name"],
-        image=body.get("image", None),
-        date_found=body.get("date_found", None),
-        location=body.get("location", None),
-        id_found=user.id,
+        name=n,
+        image=imag,
+        date_found=date_f,
+        location=loc,
+        id_found= id_f,
     )
     db.session.add(item)
     db.session.commit()
@@ -159,16 +166,17 @@ def post_item():
 @app.route("/api/item/<int:item_id>/", methods=["DELETE"])
 def delete_item(item_id):
 
-    success, session_token = extract_token(request)
+    #success, session_token = extract_token(request)
 
-    user = User.query.filter_by(session_token=session_token).first()
-    if user is None:
-        return failure_response({"error": True})
+    #user = User.query.filter_by(session_token=session_token).first()
+    #if user is None:
+    #    return failure_response({"error": True})
 
-    success = user.verify_session_token(session_token)
+    #success = user.verify_session_token(session_token)
 
-    if not success:
-        return failure_response({"error": True}, 401)
+    #if not success:
+    #    return failure_response({"error": True}, 401)
+
     item = Item.query.filter_by(id=item_id).first()
     if item is None:
         return failure_response({"error": True})

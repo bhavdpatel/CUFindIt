@@ -11,7 +11,7 @@ class Item(db.Model):
     id = db.Column(db.Integer, primary_key=True, autoincrement=True)
     name = db.Column(db.String, nullable=False)
     image_name = db.Column(db.String, nullable=False)
-    location = db.Column(db.String, nullable=True)
+    location = db.Column(db.String, nullable=False)
     id_found = db.relationship("user_found", back_populates="found_items", nullable=False)
     id_claimed = db.relationship("user_claimed", back_populates="claimed_items", nullable=True)
     date_found = db.Column(db.String, nullable=False)
@@ -30,11 +30,10 @@ class Item(db.Model):
         return {
             "id": self.id,
             "name": self.name,
-            "email": self.email,
-            "image_name": self.contact,
+            "image_name": self.image_name,
             "location": self.location,
             "date_found": self.date_found,
-            "date_claimed": self.date_claimed
+            "date_claimed": self.date_claimed,
             "id_found": self.id_found,
             "id_claimed" : self.id_claimed
         }
@@ -50,7 +49,7 @@ class User(db.Model):
     claimed_items = db.relationship("claimed_items", back_populates="item")
     found_items = db.relationship("found_items", back_populates="item")
 
-    # Session information
+    #Session information
     session_token = db.Column(db.String, nullable=False, unique=True)
     session_expiration = db.Column(db.DateTime, nullable=False)
     update_token = db.Column(db.String, nullable=False, unique=True)
