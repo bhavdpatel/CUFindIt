@@ -13,15 +13,6 @@ app.config["SQLALCHEMY_DATABASE_URI"] = "sqlite:///%s" % db_filename
 app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
 app.config["SQLALCHEMY_ECHO"] = True
 
-# Helper methods
-
-
-def extract_token(request):
-    bearer_token = request.headers.get("Authorization")
-    if bearer_token is None:
-        return False, None
-    return True, bearer_token
-
 
 def success_response(response, code=200):
     return json.dumps(response), code
@@ -34,8 +25,6 @@ def failure_response(response, code=404):
 db.init_app(app)
 with app.app_context():
     db.create_all()
-
-
 
 
 @app.route("/")
@@ -103,42 +92,17 @@ def get_all_items():
         return failure_response({"error": True}, 401)
     return success_response({"items": items})
 
-@app.route("api/item/<int:item_id>")
-def get_item(item_id):
-    item = Item.query.filter_by(id=item_id).first()
-    
-    if item is None:
-        return failure_response({"error": True},401)
-    
-    return success_response({"items": item.serialize()})
-
-
-@app.route("/api/item/<string>:net_id>/")
+@app.route("/api/item/net_id/")
 def get_item_user(net_id):
-    #success, session_token = extract_token(request)
     user = User.query.filter_by(netid=net_id).first()
     if user is None:
         return failure_response({"error": True})
-    #success = user.verify_session_token(session_token)
-    #if not success:
-        #return failure_response({"error": True}, 401)
     item = Item.query.filter_by(user_id=user.id)
     return success_response([l.serialize() for l in item])
 
 
 @app.route("/api/item/", methods=['POST'])
 def post_item():
-
-    #success, session_token = extract_token(request)
-
-    #user = User.query.filter_by(session_token=session_token).first()
-    #if user is None:
-    #    return failure_response({"error": True})
-
-    #success = user.verify_session_token(session_token)
-    #if not success:
-    #    return failure_response({"error": True}, 401)
-
     body = json.loads(request.data)
 
     n = body.get("name", None)
@@ -163,19 +127,8 @@ def post_item():
 
 
 
-@app.route("/api/item/<int:item_id>/", methods=["DELETE"])
+@app.route("/api/item/item_id/", methods=["DELETE"])
 def delete_item(item_id):
-
-    #success, session_token = extract_token(request)
-
-    #user = User.query.filter_by(session_token=session_token).first()
-    #if user is None:
-    #    return failure_response({"error": True})
-
-    #success = user.verify_session_token(session_token)
-
-    #if not success:
-    #    return failure_response({"error": True}, 401)
 
     item = Item.query.filter_by(id=item_id).first()
     if item is None:
@@ -216,5 +169,5 @@ def update_item(item_id):
 
 
 if __name__ == "__main__":
-    port = int(os.environ.get("PORT", 3000))
+    port = int(os.environ.get("PORT", 5000))
     app.run(host='0.0.0.0', port=port)
