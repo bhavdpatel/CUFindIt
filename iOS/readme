@@ -1,1 +1,8 @@
 
+For the front end, we have first created a tab bar with two separate view controllers, “Lists” and “Profile.” The Lists view controller contains a search bar along with a collection view of items. The search bar will slide down when the use scrolls down, and it will come back up when the user scrolls up. There is an add button that is also animated in the same way by detecting the scroll direction and velocity. 
+
+In the profile page, there contains another collection view of items that scrolls horizontally. It contains the items that the users claimed.
+
+For claiming, the user will click on one of the cells of the collection view and another view controller will appear, with basic informations about this item such as found by, location found, and found on (date). The claim button is animated with a bouncing response upon clicking, and it’s also implemented with two separate haptic vibrations depending on whether or not the use is claiming or unclaiming.
+
+For adding a new item to the system, the user will click the add button (with haptic and animation). Then, another view controller will appear. Here, the user can input a few String values into the text box, and those values will correspond to the fields of the new item object. Then, the user can hit “save” (also with haptics and animation), and the newly created item will be added to the “Lists” collection view.
