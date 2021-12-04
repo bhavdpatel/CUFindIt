@@ -6,6 +6,9 @@ scroll through the entries that other people have added and click on any that lo
 added before, as well as the net ID of the person who found it. If the user believes the item is theirs, they can click the "claim" button. The entry subsequently 
 becomes grayed out and displays the net ID of the user who claimed the item when one taps on it. Claimed items show up in the user's profile page. 
 
+We also have some special features. We implemented haptics so that the device vibrates every time he or she claims an item. The movement of the add button was 
+integrated in a way that would smoothly transition with the scroll. Our tab view controller is also a state of the art product. 
+
 This project was developed by the following people:
 
 Designer: Michelle Dai 
